@@ -1,0 +1,245 @@
+body{
+    background-color: black;
+    color: white;
+
+}
+
+.glCanvas {
+    padding : 0;
+    position : absolute;
+    left:0;
+    top:0;
+    margin : auto;
+    display : none;
+    border: 1px solid white;
+    float: center;
+    background-color: transparent;
+}
+
+#sliceBox {
+    padding : 0;
+    margin-top: 520px;
+    display : none;
+    float: center;
+    width: 512px;
+}
+
+.loadScreen
+{
+    padding : 0;
+    margin : auto;
+    margin-top: 6cm;
+    margin-left: 350px;
+    display : block;
+    float : center;
+    width : 1024px;
+    font-size: 40pt;
+}
+
+.loadScreen:after{
+    overflow: hidden;
+    display: inline-block;
+    vertical-align: bottom;
+    -webkit-animation: ellipsis steps(4,end) 250ms infinite;      
+    animation: ellipsis steps(4,end) 250ms infinite;
+    content: "\2026"; /* ascii code for the ellipsis character */
+    width: 0px;
+}
+
+@keyframes ellipsis {
+  to {
+    width: 1.25em;    
+  }
+}
+
+@-webkit-keyframes ellipsis {
+  to {
+    width: 1.25em;    
+  }
+}
+
+b{
+    font-size : 16pt;
+}
+
+
+
+.dropbtn {
+    background-color: black;
+    color: white;
+    padding: 16px;
+    font-size: 16px;
+    border: none;
+    cursor: pointer;
+}
+
+/* Dropdown button on hover & focus */
+.dropbtn:hover, .dropbtn:focus {
+    background-color: #404040;
+}
+
+/* The container <div> - needed to position the dropdown content */
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+/* Dropdown Content (Hidden by Default) */
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    color : black;
+    min-width: 256px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 3;
+}
+
+/* Links inside the dropdown */
+.dropdown-content a {
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+}
+
+.dropdown-content td {
+    color: black;
+    text-decoration: none;
+}
+
+/* Change color of dropdown links on hover */
+.dropdown-content a:hover {background-color: #f1f1f1}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+/* Show the dropdown menu (use JS to add this class to the .dropdown-content container when the user clicks on the dropdown button) */
+.show {display:block;}
+
+
+.hidden-image {
+    display : none;
+}
+
+.wrapper {
+    position: relative;
+    display: inline-block;
+    float: left;
+}
+
+.sliceText {
+    position : absolute;
+    text-align: center;
+    width: 100%;
+    color: lime;
+    font-weight: bold;
+}
+
+.mainDisplay{
+    position : relative;
+    background-color: transparent;
+}
+
+
+.structureInfo {
+    position: absolute;
+    padding-left: 1%;
+    top: -20px;
+    float: right;
+    align-content: left;
+    color: white;
+    display: none;
+    width : 50%;
+    font-size: 11pt;
+}
+.structureInfo td, th{
+    padding: 5px;
+    border-bottom : 1px solid #ddd;
+    /*border-top : 1px solid #ddd;*/
+}
+
+
+.helpDialog{
+    display: none; /* Hidden by default */
+    position: absolute; /* Stay in place */
+    z-index: 3; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+.helpContent{
+    background-color: #fefefe;
+    color : black;
+    margin: 0% auto; /* 15% from the top and centered */
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%; /* Could be more or less, depending on screen size */
+    height: 100%;
+    font-size : 11pt;
+}
+
+.closeButton{
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.closeButton:hover,
+.closeButton:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.hiddenInfo{
+    display : none;
+}
+
+.hiddenInfoTitle{
+    font-style: italic;
+}
+
+.hiddenInfoTitle:hover{
+    text-shadow: #aaa 0 +0px;
+}
+
+.overviewTable th,
+.overviewTable td{
+    padding: 5px;
+    border-bottom : 1px solid #ddd;
+}
+
+.overviewTable tr:hover{
+    background-color : #f5f5f5
+}
+
+.overviewButton {
+    background-color:white;
+    color: black;
+    padding: 16px;
+    font-size: 16px;
+    border: none;
+    cursor: pointer;
+}
+
+.overviewButton:hover, .overviewButton:focus {
+    background-color: #d0d0d0;
+}
+
+.overviewImageClass
+{
+    padding : 0;
+    margin : auto;
+    display : block;
+    border: 1px solid white;
+    float: right;
+    background-color: transparent;
+}

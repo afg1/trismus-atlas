@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" type="text/css" href="styles.css">
+
+
+                <! Load scripts from script directory>
+        <script src="script/textureHandling.js"></script>
+        <script src="script/webglFunctions.js"></script>
+        <script src="script/interface.js"></script>
+        <script src="script/utils.js"></script>
+
+        <script src="script/structureDefinitions.js"></script>
+
+        <! Fragment and vertex shaders - for now, placeholders >
+        <script id="2d-vertex-shader-CT" type="notjs"></script>
+        <script id="2d-fragment-shader-CT" type="notjs"></script>
+
+        <script id="2d-vertex-shader-ST" type="notjs"></script>
+        <script id="2d-fragment-shader-ST" type="notjs"></script>
+
+
+    </head>
+    <body>
+
+        <! A few necessary steps to set up the page here >
+        <script>
+            // These four calls fill the placeholder script tags with code.
+            writeToDocument("script/vertexShaderCT.glsl", "2d-vertex-shader-CT")
+            writeToDocument("script/fragmentShaderCT.glsl", "2d-fragment-shader-CT")
+            writeToDocument("script/vertexShaderStruct.glsl", "2d-vertex-shader-ST")
+            writeToDocument("script/fragmentShaderStruct.glsl", "2d-fragment-shader-ST")
+
+            // Build up the dropdown menu using the structure list
+            buildDropdownMenu(atlasStructures, otherStructures);// Pass empty list for the "other" structures for now
+
+            var structOffset = 5;// Offset to add to access structure textures
+
+            var startPageActive = true;
+            var helpShowing = true;
+
+            var structStatus = [];// Push to this when building the manu to synchronise with checkboxes
+
+
+            // Display some instructions text alongside the instructions image to help the user
+            window.onload = function() {
+                document.getElementById("loadScreenDiv").style.display = "none";
+                document.getElementById("glCanvas").style.display = "block";
+                document.getElementById("structureCanvas").style.display = "block";
+                document.getElementById("sliceBox").style.display = "block";
+                document.getElementById("structureInfoDivTop").style.display = "inline-block";
+                document.getElementById("structureInfoDiv").innerHTML = structureInfoHTMLs["instructions"];
+                requestAnimationFrame(drawSliceWrapper);     
+                };
+
+        </script>
+
+        <! Any global variables I might need should be placed here >
+        <script>
+            var aMat = [
+                1, 0, 0, 0,
+                0, 1, 0, 0,
+                0, 0, 1, 0,
+                0, 0, 0, 1
+            ];
+
+            var slicesPerTexture = 16.0;
+
+            // Some varaiables for dealing with the mouse interface...
+            var mouseIsDown = false; // Only do things if the mouse is down
+            // CurrentSlice is loaded from the slider previously
+            var lastMouse ={x : 0, y: 0}; // Last place we left the mouse
+            var firstMouse = {x : 0, y : 0};// Where the click started
+
+            // texture arrays
+            var ctTextures = new Array(4);
+            var structureTextures = new Array(4);
+        </script>
+
+
+        <! Now on to the meat of the main page >
+        <div class="loadScreen" id="loadScreenDiv">
+            Loading
+        </div>
+
+        <! A container for the main display>
+        <div class="mainDisplay">
+            <! Create the HTML5 canvas and get a webgl context>
+            <div id="canvasWrap" class="wrapper">
+                <! Note: we are specifying z-index to get the layering right>
+                <div class="sliceText" id=sliceDisplay style="display:none; z-index:2;">Slice: 10</div>
+
+                <canvas class="glCanvas" id="glCanvas" width="512" height="512" style="z-index : 0;">
+                    Your browser doesn't appear to support the 
+                    <code>&lt;canvas&gt;</code> element.
+                </canvas>
+
+                <canvas class="glCanvas" id="structureCanvas" width="512", height="512", style="z-index : 1;">
+                    Your browser doesn't appear to support the 
+                    <code>&lt;canvas&gt;</code> element.
+                </canvas>
+
+                <input type="range" name="sliceNo" id="sliceBox" value="10" min="10" max="73">
+            </div>
+            <div class="structureInfo" id="structureInfoDivTop">
+                <!--<h1>Structure Details</h1>-->
+                <div id="structureInfoDiv">
+                    <! Empty div that we fill with info later >
+                </div>
+            </div>  
+        </div>
+
+        <! A div containing the table overview of the atlas. Hidden by default, shown when selected in dropdown menu >
+        <div id="atlasOverview" class="helpDialog">
+            <div class="helpContent">
+                <span class="closeButton" id="atlasOVClose">&times;</span>
+                <p><h2>Atlas Overview</h2>
+                <div class="overviewTable">
+                    <table>
+                        <tr><th>OAR</th><th>Cranial</th><th>Caudial</th><th>Medial</th><th>Lateral</th><th>Anterior</th><th>Posterior</th></tr>
+                        <tr><td>Temporalis</td><td>7cm above EAM.<br> Or all visible muscle.</td><td>Anterior border of the coronoid process</td><td>Infra temporal fossa</td><td>Fans around the lateral aspect of the coronoid process</td><td>Posterior aspect of the zygomatic process (diagram)</td><td></td></tr>
+                        <tr><td>Masseter</td><td>Inferior aspect of zygomatic arch.</td><td>Inferior aspect of the angle and body of the mandible.</td><td>Lateral surface of the body of the mandible.</td><td></td><td></td><td>Posterior border of the ramus of the mandible.</td></tr>
+                        <tr><td>Lateral Pterygoid</td><td>Between the greater wing of sphenoid bone and outer surface of the lateral pterygoid plate.</td><td>Inferior aspect of the lateral pterygoid plate.</td><td></td><td></td><td>Behind the inferior border of the temporalis.</td><td>Neck of the mandible below the TMJ.</td></tr>
+                        <tr><td>Medial Pterygoid</td><td>Superior aspect of pterygoid plate.</td><td>Medial aspect of the angle of the mandible.</td><td>Cranially lateral aspect of the medial pterygoid plate<br>Caudally lateral aspect of the palatine tonsil and mucosa of nasopharynx.</td><td>Cranially medial aspect of the lateral pterygoid plate<br>Caudally medial aspect of the mandible.</td><td>Pterygoid plate.</td><td>Anterior border of the mucosa of pharyngeal recess.</td></tr>
+                        <tr><td>TMJ</td><td>In between the mandibular fossa of the temporal bone and lateral aspect of the sphenoid bone</td><td>One slice above the most inferior aspect of the spine of sphenoid bone.</td><td>Lateral aspect of sphenoid bone.</td><td></td><td>Cranially anterior surface of the mandibular fossa.</td><td>Surface of the mandibular fossa.</td></tr>
+                    </table>
+                    </div>
+                </p>
+            </div>
+        </div>
+
+        <! A div containing the overview images for the atlas. Hidden by default, displayed when selected in menu.>
+        <div id="overviewImages" class="helpDialog">
+            <div class="helpContent">
+                <span class="closeButton" id="imagesOVClose">&times;</span>
+                <p><h2>Atlas Images Overview</h2>
+                <ul>
+                <li class="dropdown"><button class="overviewButton" id="softTissueButton" onclick="switchActiavtion(this);">Soft tissue window</button></li>
+                <li class="dropdown"><button class="overviewButton" id="boneButton" onclick="switchActiavtion(this);">Bone window</button></li>
+                </ul>
+                    <canvas class="overviewImageClass" id="overviewImageCanvas" width="478" height="448">
+                        Your browser doesn't appear to support the 
+                        <code>&lt;canvas&gt;</code> element.
+                    </canvas>
+
+                        <h3>Key</h3>
+                        <table id="colourKeyTable">
+                            <tr><th>Colour</th><th>Structure</th></tr>
+                            <!--<tr><td></td><td></td></tr>-->
+                        </table>
+                        <script>
+                            // Build the colour key table in the atlas overview
+                            var colourKeyTable = document.getElementById("colourKeyTable");
+                            for(i = 0; i < atlasColours.length; i++)
+                            {
+                                var row = colourKeyTable.insertRow();
+                                var cell = row.insertCell();
+                                // First cell is the colour block
+                                cell.style.background = atlasColours[i];
+                                var cell2 = row.insertCell();
+                                cell2.innerHTML = atlasStructures[i];
+
+                            }
+                        </script>
+
+                </p>
+            </div>
+        </div>
+    
+        <script>
+            console.log(window.devicePixelRatio)
+
+            var gl_ct = initWebGL(document.getElementById("glCanvas"));
+            var gl_struct = initWebGL(document.getElementById("structureCanvas"))
+
+            var glElements = {}
+            glElements["CT"] = {gl : gl_ct};
+            glElements["ST"] = {gl : gl_struct};
+
+            // Gets the shaders from the html, compiles them then links them into the webGL program.
+            var program_CT = getProgram(gl_ct, "2d-vertex-shader-CT", "2d-fragment-shader-CT");
+            var program_ST = getProgram(gl_struct, "2d-vertex-shader-ST", "2d-fragment-shader-ST");
+            glElements["CT"].program = program_CT;
+            glElements["ST"].program = program_ST;
+
+            setUpCommonContext(glElements.CT);
+            setUpCommonContext(glElements.ST);
+            setUpCTContext(glElements.CT);
+            setUpStructureContext(glElements.ST);
+
+            var sliceNo = document.getElementById("sliceBox").value;
+
+
+
+            var listeningCanvas = document.getElementById("structureCanvas");
+            listeningCanvas.addEventListener("mousedown", function(glElements, e)  {mousedown(glElements, e)}.bind(listeningCanvas, glElements));
+            listeningCanvas.addEventListener("mousemove", function(glElements, e)  {mousemove(glElements, e)}.bind(listeningCanvas, glElements));
+            listeningCanvas.addEventListener("mouseup", function(glElements, e)    {mouseup  (glElements, e)}.bind(listeningCanvas, glElements));
+            listeningCanvas.addEventListener("mousewheel", function(glElements, e) {mouseWheel(glElements,e)}.bind(listeningCanvas, glElements));
+            listeningCanvas.addEventListener("contextmenu", function(event){event.preventDefault();});
+
+            listeningCanvas.addEventListener("mouseleave", mouseLeave);
+
+            document.addEventListener("keydown", keyDown, true);
+
+            // render bit
+
+            document.getElementById("sliceBox").addEventListener("input", function(){sliceNo = parseInt(this.value); requestAnimationFrame(drawSliceWrapper);} );
+
+            var currentSlice = 1;
+            sliceNo = 10;
+
+
+            console.log(ctTextures);
+            loadCTTextures(glElements.CT, textureNames);// Loads the images for CT textures without displaying them
+            loadStructuresTexture(glElements.ST, textureNames);
+
+            var startpage = loadOverviewImages(glElements.CT);
+  
+            var fb = glElements.ST.gl.createFramebuffer();
+
+        </script>
+    </body>
+</html>
